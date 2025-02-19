@@ -4,11 +4,10 @@
 Finding a **real** Mass DM service in 2025 is nearly impossible. Most providers are **scammers or unreliable**.  
 We offer a **legit, transparent, and proven** Mass DM solution to reach thousands of users efficiently.
 
-### 🔥 What’s in This Repo?
-This is the **free version** of our Mass DM tool – it includes only the **interface**.  
-The core scripts for **joining, scraping, and sending DMs** are **not included** in this public release.
-
-We’re actively working on improvements, and future updates will bring more features.  
+### 🎥 Live Preview
+Check out how the interface looks in action:  
+[![Preview](https://i.gyazo.com/7eeb882988dbe396f10e6b057627e0c8.gif)](https://gyazo.com/7eeb882988dbe396f10e6b057627e0c8)  
+*(Click to watch the full video)*
 
 ---
 
