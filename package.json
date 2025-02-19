@@ -1,0 +1,14 @@
+{
+  "name": "my-electron-ui",
+  "version": "1.0.0",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^25.3.1",
+    "discord.js-selfbot-v13": "^2.14.7",
+    "p-limit": "^4.0.0",
+    "https-proxy-agent": "^5.0.0"
+  }
+}

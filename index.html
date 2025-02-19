@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Discord Tools</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="toastNotify"></div>
+
+  <!-- Modal for message preview -->
+  <div id="modalOverlay">
+    <div id="modalBox">
+      <div id="previewContent"></div>
+      <button class="btn" onclick="closePreview()">Close</button>
+    </div>
+  </div>
+
+  <div id="wrapper">
+    <h1>Discord Tools</h1>
+
+    <!-- TOP: Invite + LogFolder + Single Token field -->
+    <div id="topRow" class="horizontalRow">
+      <!-- Server Invite Link -->
+      <div class="flexColumn">
+        <label class="fieldLabel tooltip"
+               title="Enter or paste a full Discord invite link here. Example: https://discord.gg/abc123. 
+When you click 'Generate', it saves the code + serverId.">
+          Server Invite Link
+        </label>
+        <div class="rowInput">
+          <button class="iconBtnSmall tooltip"
+                  title="Copy the invite link"
+                  onclick="copyField('inviteInput')">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M19,20H5V4H11V7H14V10H17V13H20V19C20,19.55 19.55,20 19,20
+                   M18,12H13V7H12V6H7V18H18V12Z"/>
+            </svg>
+          </button>
+          <input type="text" id="inviteInput" class="bigInput" placeholder="https://discord.gg/abc123"
+                 title="Full invite link from Discord" />
+          <button class="btn tooltip" title="Save the invite code + server id" onclick="saveInvite()">
+            Generate
+          </button>
+        </div>
+        <p id="currentInvite" style="margin:0; font-size:12px; color:#bbb;">No invite yet</p>
+      </div>
+
+      <!-- Log Folder -->
+      <div class="flexColumn">
+        <label class="fieldLabel tooltip"
+               title="Optional custom folder name for logs (auto-generated if empty)">
+          Log Folder
+        </label>
+        <div class="rowInput">
+          <button class="iconBtnSmall tooltip"
+                  title="Copy the log folder path"
+                  onclick="copyField('logFolderInput')">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M19,20H5V4H11V7H14V10H17V13H20V19
+                   C20,19.55 19.55,20 19,20 M18,12H13V7H12V6H7V18H18V12Z"/>
+            </svg>
+          </button>
+          <input type="text" id="logFolderInput" class="bigInput"
+                 placeholder="auto-gen if empty" />
+        </div>
+      </div>
+
+      <!-- Login with Token -->
+      <div class="flexColumn">
+        <label class="fieldLabel tooltip"
+               title="Paste a single token to open Discord in a puppeteer browser. 
+This doesn't store the token, just spawns the script.">
+          Paste Token
+        </label>
+        <div class="rowInput">
+          <button class="iconBtnSmall tooltip"
+                  title="Copy the token"
+                  onclick="copyField('loginTokenInput')">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M19,20H5V4H11V7H14V10H17V13H20V19
+                   C20,19.55 19.55,20 19,20 M18,12H13V7H12V6H7V18H18V12Z"/>
+            </svg>
+          </button>
+          <input type="text" id="loginTokenInput" class="bigInput"
+                 placeholder="Paste token" />
+          <button class="btn tooltip" title="Run the login-with-token script" onclick="runLoginWithToken()">
+            Run
+          </button>
+        </div>
+      </div>
+    </div><!-- end topRow -->
+
+    <!-- Middle Row: Message + Tokens side by side -->
+    <div id="middleRow" style="display:flex; gap:15px; margin-top:10px;">
+      <!-- Message -->
+      <div class="bigSection" style="flex:1;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="iconBtnSmall tooltip"
+                  title="Copy the entire message text"
+                  onclick="copyField('messagesTxt')">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M19,20H5V4H11V7H14V10H17V13H20V19
+                   C20,19.55 19.55,20 19,20 M18,12H13V7H12V6H7V18H18V12Z"/>
+            </svg>
+          </button>
+          <span class="bigSectionLabel">Message</span>
+        </div>
+        <textarea id="messagesTxt" placeholder="DM content..."
+                  title="Full text for the DM tool"></textarea>
+        <div class="rowBtn">
+          <button class="btn tooltip"
+                  title="Save the message to slashy/input/messages.txt"
+                  onclick="saveFile('input/messages.txt','messagesTxt')">
+            Save
+          </button>
+          <button class="btn tooltip" title="Preview with basic Discord formatting" onclick="previewMessage()">
+            Preview
+          </button>
+        </div>
+      </div>
+
+      <!-- Tokens => made bigger horizontally, put stats + buttons on one row -->
+      <div class="bigSection" style="flex:2;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="iconBtnSmall tooltip"
+                  title="Copy the entire tokens text"
+                  onclick="copyField('tokensTxt')">
+            <svg viewBox="0 0 24 24">
+              <path fill="currentColor"
+                d="M19,20H5V4H11V7H14V10H17V13H20V19
+                   C20,19.55 19.55,20 19,20 M18,12H13V7H12V6H7V18H18V12Z"/>
+            </svg>
+          </button>
+          <span class="bigSectionLabel">Tokens</span>
+          <button class="importBtn tooltip"
+                  title="Load tokens from a .txt file"
+                  onclick="document.getElementById('tokensFileInput').click()">
+            Import File
+          </button>
+          <input type="file" id="tokensFileInput" style="display:none" accept=".txt" />
+        </div>
+
+        <!-- bigger tokens area -->
+        <textarea id="tokensTxt" placeholder="One token per line..."
+                  style="min-height:250px;"
+                  title="All tokens used by Joiner/Scraper/DM"></textarea>
+
+        <!-- Single row => buttons + stats on the right -->
+        <div class="rowBtn" style="flex-wrap:wrap;">
+          <!-- left side => check tokens, save, move valid -->
+          <button id="btnCheckTokens" class="btn highlightCheck tooltip"
+                  title="Check which tokens are valid or invalid"
+                  onclick="runTokenChecker()">
+            Check Tokens
+          </button>
+          <button class="btn tooltip"
+                  title="Save tokens to slashy/input/tokens.txt"
+                  onclick="saveFile('input/tokens.txt','tokensTxt')">
+            Save
+          </button>
+          <button id="btnMoveValid" class="btn disabled tooltip"
+                  style="background:#3ba55c;"
+                  title="After 'Check Tokens' finishes, move valid to tokens.txt"
+                  onclick="moveToValid()">
+            Move to valid tokens
+          </button>
+
+          <!-- push stats to the far right with margin-left:auto -->
+          <span style="margin-left:auto; display:flex; gap:15px; align-items:center; font-size:13px;">
+            <span style="color:#aaa;">Total: <span id="statTotal">0</span></span>
+            <span style="color:#3ba55c;">Valid: <span id="statValid">0</span></span>
+            <span style="color:#ed4245;">Invalid: <span id="statInvalid">0</span></span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom row: Joiner / Scraper / DM -->
+    <div id="bottomRow" style="display:flex; gap:15px; margin-top:10px;">
+      <!-- Joiner -->
+      <div class="toolBox">
+        <div class="toolBoxHeader">
+          <span>Joiner</span>
+          <span class="toolBoxStat">Joined: <span id="statJoined">0</span></span>
+        </div>
+        <div class="rowBtn">
+          <button id="btnJoiner" class="btn disabled tooltip"
+                  title="Run the joiner script with input/tokens"
+                  onclick="runJoiner()">
+            Run Joiner
+          </button>
+          <button class="btn tooltip"
+                  title="Stop the joiner script"
+                  onclick="stopScript('joiner')">
+            Stop
+          </button>
+        </div>
+        <div style="color:#ed4245; font-size:13px;">
+          Fail Join: <span id="statJoinFails">0</span>
+        </div>
+        <div class="rowBtn">
+          <button id="btnClearFailJoin" class="btn disabled tooltip"
+                  title="No fails yet"
+                  onclick="clearJoinFails()">
+            Clear tokens that can not join
+          </button>
+        </div>
+      </div>
+
+      <!-- Scraper -->
+      <div class="toolBox">
+        <div class="toolBoxHeader">
+          <span>Scraper</span>
+          <span class="toolBoxStat">Members: <span id="statMembers">0</span></span>
+        </div>
+        <div class="rowBtn">
+          <button id="btnScraper" class="btn disabled tooltip"
+                  title="Scrape members from server"
+                  onclick="runScraper()">
+            Run Scraper
+          </button>
+          <button class="btn tooltip"
+                  title="Stop the scraper script"
+                  onclick="stopScript('scraper')">
+            Stop
+          </button>
+        </div>
+      </div>
+
+      <!-- DM Tool -->
+      <div class="toolBox">
+        <div class="toolBoxHeader">
+          <span>DM Tool</span>
+          <span class="toolBoxStat">Sent: <span id="statDmSent">0</span></span>
+        </div>
+        <div class="rowBtn">
+          <button id="btnDM" class="btn disabled tooltip"
+                  title="Mass-DM script using tokens + members"
+                  onclick="runDM()">
+            Run DM
+          </button>
+          <button class="btn tooltip"
+                  title="Stop the DM script"
+                  onclick="stopScript('dm')">
+            Stop
+          </button>
+        </div>
+        <div style="color:#ed4245; font-size:13px;">
+          Fail DM: <span id="statDmFails">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Console area -->
+    <div class="bigSection" style="margin-top:10px; min-height:120px;">
+      <div style="display:flex; gap:6px; align-items:center;">
+        <span class="bigSectionLabel">Console</span>
+      </div>
+      <div id="logsConsole" class="consoleArea"></div>
+    </div>
+
+    <!-- Advanced Settings -->
+    <div class="advancedSection">
+      <div class="advHeader">
+        <h3>Advanced Settings</h3>
+        <button class="btn" onclick="toggleAdvanced()">Show/Hide</button>
+      </div>
+      <div id="advCollapsible" class="advCollapsed">
+        <div class="advGrid">
+          <div class="advCol">
+            <div style="display:flex; gap:6px; align-items:center;">
+              <h4 style="margin:0;">proxies.txt</h4>
+              <button class="iconBtnSmall tooltip"
+                      title="Copy proxies"
+                      onclick="copyField('proxiesTxt')">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M19,20H5V4H11V7H14V10H17V13H20V19
+                       C20,19.55 19.55,20 19,20 M18,12H13V7H12V6H7V18H18V12Z"/>
+                </svg>
+              </button>
+            </div>
+            <textarea id="proxiesTxt" placeholder="user:pass@host:port"></textarea>
+            <button class="btn tooltip"
+                    title="Save proxies to slashy/input/proxies.txt"
+                    onclick="saveFile('input/proxies.txt','proxiesTxt')">
+              Save proxies
+            </button>
+          </div>
+          <div class="advCol">
+            <div style="display:flex; gap:6px; align-items:center;">
+              <h4 style="margin:0;">config.json</h4>
+              <button class="iconBtnSmall tooltip"
+                      title="Copy config"
+                      onclick="copyField('configTxt')">
+                <svg viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M19,20H5V4H11V7H14V10H17V13H20V19
+                       C20,19.55 19.55,20 19,20 M18,12H13V7H12V6H7V18H18V12Z"/>
+                </svg>
+              </button>
+            </div>
+            <textarea id="configTxt" placeholder='{"captcha_api_key":"..."}'></textarea>
+            <button class="btn tooltip"
+                    title="Save config to slashy/config.json"
+                    onclick="saveFile('config.json','configTxt')">
+              Save config.json
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- end #wrapper -->
+
+  <!-- Your same renderer.js script -->
+  <script src="renderer.js"></script>
+</body>
+</html>
